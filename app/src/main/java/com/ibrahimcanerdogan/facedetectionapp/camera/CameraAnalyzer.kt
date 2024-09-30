@@ -13,6 +13,9 @@ import com.ibrahimcanerdogan.facedetectionapp.graphic.RectangleOverlay
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 
 class CameraAnalyzer(
     private val overlay: GraphicOverlay<*>,
@@ -79,8 +82,23 @@ class CameraAnalyzer(
             faceGraphic.setText(estado)
 
             Log.d(TAG, "Resultado de la predicción: $estado")
+
+            // Guardar el estado en un archivo csv
+            saveResultToCSV(estado, output[0][0])
         }
         graphicOverlay.postInvalidate()
+    }
+
+    private fun saveResultToCSV(estado: String, output: Float) {
+        val file = File(overlay.context.filesDir, "resultados.csv")
+        try {
+            val writer = FileWriter(file, true)
+            writer.append("$estado,$output\n")
+            writer.flush()
+            writer.close()
+        } catch (e: IOException) {
+            Log.e(TAG, "Error writing to CSV file: $e")
+        }
     }
 
     override fun onFailure(e: Exception) {
